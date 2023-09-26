@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { User } from '../model/user';
+import { User } from '../models/user';
 import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
@@ -36,6 +36,12 @@ export class UserService {
       tap((newUser: User) => console.log(`Added user with id=${newUser.id}`)),
       catchError(this.handleError<User>('registerUser'))
     );
+  }
+
+  loginUser(loginDetails: any): Observable<any> {
+    const url = `${this.usersURL}/login`;
+
+    return this.http.post<any>(url, loginDetails, this.httpOptions);
   }
 
   /**

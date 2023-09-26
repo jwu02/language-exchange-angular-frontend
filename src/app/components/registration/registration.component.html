@@ -1,0 +1,23 @@
+<form>
+  <h1>Registration</h1>
+
+  <div class="mb-3">
+    <label for="input-email" class="form-label">Email address</label>
+    <input type="email" class="form-control" id="input-email" placeholder="Enter password"
+      [(ngModel)]="email" [ngModelOptions]="{standalone: true}">
+  </div>
+
+  <div class="mb-3">
+    <label for="input-username" class="form-label">Username</label>
+    <input type="text" class="form-control" id="input-username" placeholder="Enter password"
+      [(ngModel)]="username" [ngModelOptions]="{standalone: true}">
+  </div>
+
+  <div class="mb-3">
+    <label for="input-password" class="form-label">Password</label>
+    <input type="password" class="form-control" id="input-password" placeholder="Enter password"
+      [(ngModel)]="password" [ngModelOptions]="{standalone: true}">
+  </div>
+
+  <button type="submit" class="btn btn-primary" (click)="registerUser()">Submit</button>
+</form>

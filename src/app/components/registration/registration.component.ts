@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { NavigationExtras, Router } from '@angular/router';
-import { UserService } from '../service/user.service';
-import { User } from '../model/user';
+import { UserService } from '../../services/user.service';
+import { User } from '../../models/user';
 
 @Component({
   selector: 'app-registration',
@@ -34,6 +34,7 @@ export class RegistrationComponent {
     this.userService.registerUser(userBodyData as User)
       .subscribe(user => {
         console.log(user);
+        // https://stackoverflow.com/questions/58556569/angular-7-router-navigate-with-message-after-redirecting
         const navigationExtras: NavigationExtras = {state: {registrationSuccess: true}};
         this.router.navigateByUrl('/', navigationExtras);
       });
