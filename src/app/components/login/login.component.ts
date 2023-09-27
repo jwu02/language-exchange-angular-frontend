@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserService } from 'src/app/services/user.service';
 
@@ -39,6 +39,11 @@ export class LoginComponent {
     this.userService.loginUser(loginDetailsBody)
       .subscribe(res => {
         console.log(res);
+        if (res.status) {
+          sessionStorage.setItem('loggedInUser', JSON.stringify(res.user));   // if it's object
+          this.router.navigate(['posts']);
+          window.location.reload();
+        }
       });
   }
 }
