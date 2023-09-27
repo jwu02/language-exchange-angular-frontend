@@ -41,8 +41,9 @@ export class LoginComponent {
         console.log(res);
         if (res.status) {
           sessionStorage.setItem('loggedInUser', JSON.stringify(res.user));   // if it's object
-          this.router.navigate(['posts']);
-          window.location.reload();
+          this.router.navigate(['posts']).then(() =>
+            window.location.reload()
+          );
         }
       });
   }

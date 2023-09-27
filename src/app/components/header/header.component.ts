@@ -15,12 +15,12 @@ export class HeaderComponent {
     if (jsonString) {
       this.loggedInUser = JSON.parse(jsonString) as User;
     }
-    console.log(this.loggedInUser);
   }
 
   logout(): void {
     sessionStorage.clear();
-    this.router.navigateByUrl('/');
-    window.location.reload();
+    this.router.navigate(['/']).then(() =>
+      window.location.reload()
+    );
   }
 }
