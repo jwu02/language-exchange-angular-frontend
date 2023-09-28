@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { User } from '../models/user';
 import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
+import { EmailValidationResponse } from '../responses/EmailValidationResponse';
 
 @Injectable({
   providedIn: 'root'
@@ -36,6 +37,14 @@ export class UserService {
       tap((newUser: User) => console.log(`Added user with id=${newUser.id}`)),
       catchError(this.handleError<User>('registerUser'))
     );
+  }
+
+  emailExistsValidation(email: string): Observable<EmailValidationResponse> {
+    const url = `${this.usersURL}/register/validate-email?email=${email}`
+    return this.http.get<EmailValidationResponse>(url).pipe(
+      tap((response: EmailValidationResponse) => console.log(`Email exists: ${response.emailExists}`)),
+      catchError(this.handleError<EmailValidationResponse>('emailExistsValidation'))
+    )
   }
 
   /**

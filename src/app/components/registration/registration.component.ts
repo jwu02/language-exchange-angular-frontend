@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Injectable, OnInit } from '@angular/core';
 import { NavigationExtras, Router } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { User } from '../../models/user';
-import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, AsyncValidator, AsyncValidatorFn, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Gender } from 'src/app/models/gender-enum';
+import { Observable, of } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-registration',
@@ -18,7 +20,8 @@ export class RegistrationComponent implements OnInit {
     // inject dependencies
     private userService: UserService,
     private router: Router,
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    // private emailExistsValidator: EmailExistsValidator
   ) {}
 
   ngOnInit(): void {
@@ -35,14 +38,17 @@ export class RegistrationComponent implements OnInit {
     // }, {updateOn: 'change'})
 
     this.registrationForm = new FormGroup({
-      email: new FormControl<string|null>(null, [Validators.required, Validators.email]),
+      email: new FormControl<string|null>(null, { 
+        validators: [Validators.required, Validators.email], 
+        asyncValidators: [this.emailExistsValidator()]
+      }),
       username: new FormControl<string|null>(null, [Validators.required, Validators.minLength(3)]),
       password: new FormControl<string|null>(null, [Validators.required, Validators.minLength(3)]), // set to 8 later
       confirmPassword: new FormControl<string|null>(null, Validators.required),
       gender: new FormControl<Gender>(Gender.Male, Validators.required),
       dob: new FormControl<Date|null>(null, Validators.required),
       selfIntroduction: new FormControl<string|null>(null)
-    }, { validators: this.mismatchPasswordValidator });
+    }, { validators: this.mismatchPasswordValidator, updateOn: 'blur' });
     
   }
 
@@ -65,14 +71,14 @@ export class RegistrationComponent implements OnInit {
   }
 
   /**
-   * Validator for determining if password form control value is 
-   * equal to confirm password form control value.
-   * 
    * The validator returns a configured validator function
    * which takes an Angular control object and returns either 
    * null if control object is valid or a validation error object.
+   * 
    * https://angular.io/guide/form-validation#defining-custom-validators
-   * @returns 
+   * 
+   * @returns a validator for determining if password form control value is 
+   * equal to confirm password form control value.
    */
   mismatchPasswordValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
     const password = control.get('password')?.getRawValue();
@@ -80,4 +86,20 @@ export class RegistrationComponent implements OnInit {
 
     return password === confirmPassword ? null : { 'mismatchPassword': true };
   };
+
+  /**
+   * https://zoaibkhan.com/blog/how-to-add-async-validation-to-angular-reactive-forms/
+   * 
+   * @returns an asynchronous validation function (since we have to 
+   * wait for HTTP response from server) to determine whether the email 
+   * the user entered already exists
+   */
+  emailExistsValidator(): AsyncValidatorFn {
+    return (control: AbstractControl): Observable<ValidationErrors | null> => {
+      return this.userService.emailExistsValidation(control.value).pipe(
+        map((response) => (response.emailExists ? { emailExists: true } : null)),
+        catchError((err) => of(null))
+      );
+    };
+}
 }

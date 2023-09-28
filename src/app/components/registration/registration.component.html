@@ -1,6 +1,5 @@
 <h1>Registration</h1>
 
-<!-- // https://www.youtube.com/watch?v=wOtPXAbxoM4&ab_channel=CodeShotsWithProfanis -->
 <form [formGroup]="registrationForm" (ngSubmit)="registerUser()" #localForm="ngForm">
   <div class="accordion mb-3" id="accordionExample">
     <!-- registration form part 1 -->
@@ -24,6 +23,7 @@
             <div class="invalid-feedback">
               <div *ngIf="registrationForm.get('email')?.hasError('required')">Email is required.</div>
               <div *ngIf="registrationForm.get('email')?.hasError('email')">Not a valid email format.</div>
+              <div *ngIf="registrationForm.get('email')?.hasError('emailExists')">This email already exists.</div>
             </div>
           </div>
 
