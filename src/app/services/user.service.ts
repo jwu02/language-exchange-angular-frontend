@@ -3,13 +3,12 @@ import { Injectable } from '@angular/core';
 import { User } from '../models/user';
 import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
-import { EmailValidationResponse } from '../responses/EmailValidationResponse';
+// import { EmailValidationResponse } from '../responses/EmailValidationResponse';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-
   private usersURL = "http://localhost:8080/api/v1/user";
   httpOptions = {
     headers: new HttpHeaders({ 'Content-Type': 'application/json' })
@@ -21,8 +20,8 @@ export class UserService {
 
   /**
    * Make a POST request to add a new user to the server
-   * @param user 
-   * @returns 
+   * @param user object containing details for the new user to be created in the database
+   * @returns the new user created
    */
   registerUser(user: User): Observable<User> {
     const url = `${this.usersURL}/register`;
@@ -38,17 +37,25 @@ export class UserService {
       catchError(this.handleError<User>('registerUser'))
     );
   }
-
-  emailExistsValidation(email: string): Observable<EmailValidationResponse> {
-    const url = `${this.usersURL}/register/validate-email?email=${email}`
-    return this.http.get<EmailValidationResponse>(url).pipe(
-      tap((response: EmailValidationResponse) => console.log(`Email exists: ${response.emailExists}`)),
-      catchError(this.handleError<EmailValidationResponse>('emailExistsValidation'))
+  
+  /**
+   * Send a HTTP get request to the server to query whether a value already exists
+   * in the queryField
+   * @param queryField the field in the database to query
+   * @param value value to check if exists
+   * @returns a boolean indicating whether the value exists in the queryField
+   */
+  valueExistsValidation(queryField: string, value: string): Observable<boolean> {
+    const url = `${this.usersURL}/register/${queryField}-exists?value=${value}`
+    return this.http.get<boolean>(url).pipe(
+      tap((response: boolean) => 
+        console.log(`${queryField} value ${value} exists: ${response}`)),
+      catchError(this.handleError<boolean>('emailExistsValidation'))
     )
   }
 
   /**
-   * Make a POST request to server
+   * Make a login POST request to server
    * @param loginDetails HTTP body data to be sent off
    * @returns 
    */

@@ -1,8 +1,8 @@
-import { Component, Injectable, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NavigationExtras, Router } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { User } from '../../models/user';
-import { AbstractControl, AsyncValidator, AsyncValidatorFn, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, AsyncValidatorFn, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Gender } from 'src/app/models/gender-enum';
 import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
@@ -19,30 +19,19 @@ export class RegistrationComponent implements OnInit {
   constructor(
     // inject dependencies
     private userService: UserService,
-    private router: Router,
-    private formBuilder: FormBuilder,
-    // private emailExistsValidator: EmailExistsValidator
+    private router: Router
   ) {}
 
   ngOnInit(): void {
-    // forms can also be built using FormBuilder if 
-    // the other approach is too tedious
-    // this.registrationForm = this.formBuilder.group({
-    //   email: ['', [Validators.required, Validators.email]],
-    //   username: ['', Validators.required],
-    //   password: ['', Validators.required, Validators.minLength(8)],
-    //   confirmPassword: ['', Validators.required],
-    //   gender: ['', Validators.required],
-    //   dob: ['', Validators.required],
-    //   selfIntroduction: ['']
-    // }, {updateOn: 'change'})
-
     this.registrationForm = new FormGroup({
       email: new FormControl<string|null>(null, { 
         validators: [Validators.required, Validators.email], 
-        asyncValidators: [this.emailExistsValidator()]
+        asyncValidators: this.valueExistsValidator('email')
       }),
-      username: new FormControl<string|null>(null, [Validators.required, Validators.minLength(3)]),
+      username: new FormControl<string|null>(null, {
+        validators: [Validators.required, Validators.minLength(3)],
+        asyncValidators: this.valueExistsValidator('username')
+      }),
       password: new FormControl<string|null>(null, [Validators.required, Validators.minLength(3)]), // set to 8 later
       confirmPassword: new FormControl<string|null>(null, Validators.required),
       gender: new FormControl<Gender>(Gender.Male, Validators.required),
@@ -52,9 +41,11 @@ export class RegistrationComponent implements OnInit {
     
   }
 
+  /**
+   * Checks if all the fields in the registration form is valid and make a 
+   * registration request to the server via a service
+   */
   registerUser(): void {
-    console.log(this.registrationForm.value)
-
     if (this.registrationForm.valid) {
       let userBodyData = this.registrationForm.value;
       delete userBodyData["confirmPassword"];
@@ -89,15 +80,15 @@ export class RegistrationComponent implements OnInit {
 
   /**
    * https://zoaibkhan.com/blog/how-to-add-async-validation-to-angular-reactive-forms/
-   * 
+   * @param queryField field to query from server for existence of a particular value
    * @returns an asynchronous validation function (since we have to 
-   * wait for HTTP response from server) to determine whether the email 
-   * the user entered already exists
+   * wait for HTTP response from server) to determine whether the value
+   * the user entered for a particular queryField already exists
    */
-  emailExistsValidator(): AsyncValidatorFn {
+  valueExistsValidator(queryField: string): AsyncValidatorFn {
     return (control: AbstractControl): Observable<ValidationErrors | null> => {
-      return this.userService.emailExistsValidation(control.value).pipe(
-        map((response) => (response.emailExists ? { emailExists: true } : null)),
+      return this.userService.valueExistsValidation(queryField, control.value).pipe(
+        map((response) => (response ? { valueExists: true } : null)),
         catchError((err) => of(null))
       );
     };

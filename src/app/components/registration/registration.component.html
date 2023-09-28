@@ -13,23 +13,27 @@
         <div class="accordion-body">
           <div class="form-floating mb-3">
             <!-- assign Bootstrap class `is-invalid` by setting it to true, if 2 conditions are met:
-              (1) the localForm is submitted 
+              (1) the localForm is submitted
               (2) and the form control doesn't pass all validations -->
             <input type="email" class="form-control" id="floatingEmail" placeholder="name@example.com" 
-              formControlName="email" [class.is-invalid]="(localForm.submitted || registrationForm.get('email')?.touched) && registrationForm.get('email')?.invalid">
+              formControlName="email" [class.is-invalid]="(localForm.submitted || registrationForm.get('email')?.touched) && registrationForm.get('email')?.invalid"
+              [class.is-valid]="registrationForm.get('email')?.valid">
             <label for="floatingEmail">Email address</label>
             
             <!-- Bootstrap displays the div below if `is-invalid` is set to true -->
             <div class="invalid-feedback">
+              <!-- the appropriate message is displayed to let the user know
+                if any of the validations failed -->
               <div *ngIf="registrationForm.get('email')?.hasError('required')">Email is required.</div>
               <div *ngIf="registrationForm.get('email')?.hasError('email')">Not a valid email format.</div>
-              <div *ngIf="registrationForm.get('email')?.hasError('emailExists')">This email already exists.</div>
+              <div *ngIf="registrationForm.get('email')?.hasError('valueExists')">Email already registered.</div>
             </div>
           </div>
 
           <div class="form-floating mb-3">
             <input type="text" class="form-control" id="floatingUsername" placeholder="name" 
-              formControlName="username" [class.is-invalid]="(localForm.submitted || registrationForm.get('username')?.touched) && registrationForm.get('username')?.invalid">
+              formControlName="username" [class.is-invalid]="(localForm.submitted || registrationForm.get('username')?.touched) && registrationForm.get('username')?.invalid"
+              [class.is-valid]="registrationForm.get('username')?.valid">
             <label for="floatingUsername">Username</label>
 
             <div class="invalid-feedback">
@@ -37,12 +41,14 @@
               <!-- access the minlength validator's required length programmatically -->
               <div *ngIf="registrationForm.get('username')?.hasError('minlength')">Username must be at least 
                 {{this.registrationForm.get('username')?.errors?.['minlength'].requiredLength}} characters long.</div>
-            </div>
+                <div *ngIf="registrationForm.get('username')?.hasError('valueExists')">Username already exists.</div>
+              </div>
           </div>
 
           <div class="form-floating mb-3">
             <input type="password" class="form-control" id="floatingPassword" placeholder="Password" 
-              formControlName="password" [class.is-invalid]="(localForm.submitted || registrationForm.get('password')?.touched) && registrationForm.get('password')?.invalid">
+              formControlName="password" [class.is-invalid]="(localForm.submitted || registrationForm.get('password')?.touched) && registrationForm.get('password')?.invalid"
+              [class.is-valid]="registrationForm.get('password')?.valid">
             <label for="floatingPassword">Password</label>
 
             <div class="invalid-feedback">
@@ -55,7 +61,8 @@
           <div class="form-floating">
             <input type="password" class="form-control" id="floatingConfirmPassword" placeholder="ConfirmPassword" 
               formControlName="confirmPassword" [class.is-invalid]="(localForm.submitted || registrationForm.get('confirmPassword')?.touched) && 
-              (registrationForm.get('confirmPassword')?.invalid || registrationForm.errors?.['mismatchPassword'])">
+              (registrationForm.get('confirmPassword')?.invalid || registrationForm.errors?.['mismatchPassword'])"
+              [class.is-valid]="registrationForm.get('confirmPassword')?.valid">
             <label for="floatingConfirmPassword">Confirm password</label>
           
             <div class="invalid-feedback">
