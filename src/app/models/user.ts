@@ -15,5 +15,8 @@ export interface User {
     id: number,
     email: string,
     username: string,
-    password: string
+    password: string,
+    gender: string,
+    dob: Date,
+    selfIntroduction: string
 }

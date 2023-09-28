@@ -19,6 +19,7 @@ export class HeaderComponent {
 
   logout(): void {
     sessionStorage.clear();
+    // https://stackoverflow.com/questions/57354169/angular-components-is-not-updated-after-router-navigate
     this.router.navigate(['/']).then(() =>
       window.location.reload()
     );

@@ -1,42 +1,83 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NavigationExtras, Router } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { User } from '../../models/user';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { Gender } from 'src/app/models/gender-enum';
 
 @Component({
   selector: 'app-registration',
   templateUrl: './registration.component.html',
   styleUrls: ['./registration.component.css']
 })
-export class RegistrationComponent {
-  email: string = "";
-  username: string = "";
-  password: string = "";
+export class RegistrationComponent implements OnInit {
 
+  registrationForm!: FormGroup;
+  
   constructor(
     // inject dependencies
     private userService: UserService,
-    private router: Router
+    private router: Router,
+    private formBuilder: FormBuilder
   ) {}
 
-  registerUser(): void {
-    this.email = this.email.trim();
-    this.username = this.username.trim();
-    this.password = this.password.trim();
-    if (!this.email || !this.username|| !this.password) { return; }
+  ngOnInit(): void {
+    // forms can also be built using FormBuilder if 
+    // the other approach is too tedious
+    // this.registrationForm = this.formBuilder.group({
+    //   email: ['', [Validators.required, Validators.email]],
+    //   username: ['', Validators.required],
+    //   password: ['', Validators.required, Validators.minLength(8)],
+    //   confirmPassword: ['', Validators.required],
+    //   gender: ['', Validators.required],
+    //   dob: ['', Validators.required],
+    //   selfIntroduction: ['']
+    // }, {updateOn: 'change'})
 
-    let userBodyData = {
-      email: this.email,
-      username: this.username,
-      password: this.password
-    }
-
-    this.userService.registerUser(userBodyData as User)
-      .subscribe(user => {
-        console.log(user);
-        // https://stackoverflow.com/questions/58556569/angular-7-router-navigate-with-message-after-redirecting
-        const navigationExtras: NavigationExtras = {state: {registrationSuccess: true}};
-        this.router.navigateByUrl('/', navigationExtras);
-      });
+    this.registrationForm = new FormGroup({
+      email: new FormControl<string|null>(null, [Validators.required, Validators.email]),
+      username: new FormControl<string|null>(null, [Validators.required, Validators.minLength(3)]),
+      password: new FormControl<string|null>(null, [Validators.required, Validators.minLength(3)]), // set to 8 later
+      confirmPassword: new FormControl<string|null>(null, Validators.required),
+      gender: new FormControl<Gender>(Gender.Male, Validators.required),
+      dob: new FormControl<Date|null>(null, Validators.required),
+      selfIntroduction: new FormControl<string|null>(null)
+    }, { validators: this.mismatchPasswordValidator });
+    
   }
+
+  registerUser(): void {
+    console.log(this.registrationForm.value)
+
+    if (this.registrationForm.valid) {
+      let userBodyData = this.registrationForm.value;
+      delete userBodyData["confirmPassword"];
+
+      this.userService.registerUser(userBodyData as User)
+        .subscribe(user => {
+          console.log(user);
+          // Redirect to login page after registration, with data indicating success
+          // https://stackoverflow.com/questions/58556569/angular-7-router-navigate-with-message-after-redirecting
+          const navigationExtras: NavigationExtras = {state: {registrationSuccess: true}};
+          this.router.navigateByUrl('/', navigationExtras);
+        });
+    }
+  }
+
+  /**
+   * Validator for determining if password form control value is 
+   * equal to confirm password form control value.
+   * 
+   * The validator returns a configured validator function
+   * which takes an Angular control object and returns either 
+   * null if control object is valid or a validation error object.
+   * https://angular.io/guide/form-validation#defining-custom-validators
+   * @returns 
+   */
+  mismatchPasswordValidator: ValidatorFn = (control: AbstractControl): ValidationErrors | null => {
+    const password = control.get('password')?.getRawValue();
+    const confirmPassword = control.get('confirmPassword')?.getRawValue();
+
+    return password === confirmPassword ? null : { 'mismatchPassword': true };
+  };
 }

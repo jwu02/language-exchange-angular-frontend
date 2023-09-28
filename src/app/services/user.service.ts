@@ -38,6 +38,11 @@ export class UserService {
     );
   }
 
+  /**
+   * Make a POST request to server
+   * @param loginDetails HTTP body data to be sent off
+   * @returns 
+   */
   loginUser(loginDetails: any): Observable<any> {
     const url = `${this.usersURL}/login`;
 

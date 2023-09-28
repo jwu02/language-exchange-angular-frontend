@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UserService } from 'src/app/services/user.service';
 
@@ -11,8 +12,10 @@ export class LoginComponent {
 
   registrationSuccess: boolean = false;
 
-  email: string = "";
-  password: string = "";
+  loginForm = new FormGroup({
+    email: new FormControl<string|null>(null, [Validators.required, Validators.email]),
+    password: new FormControl<string|null>(null, [Validators.required])
+  });
 
   constructor(
     private router: Router,
@@ -29,22 +32,19 @@ export class LoginComponent {
   }
 
   loginUser(): void {
-    if (!this.email || !this.password) { return; }
+    if (this.loginForm.valid) {
+      let loginDetails = this.loginForm.value;
 
-    let loginDetailsBody = {
-      email: this.email,
-      password: this.password
+      this.userService.loginUser(loginDetails)
+        .subscribe(res => {
+          console.log(res);
+          if (res.status) {
+            sessionStorage.setItem('loggedInUser', JSON.stringify(res.user));   // if it's object
+            this.router.navigate(['posts']).then(() =>
+              window.location.reload()
+            );
+          }
+        });
     }
-
-    this.userService.loginUser(loginDetailsBody)
-      .subscribe(res => {
-        console.log(res);
-        if (res.status) {
-          sessionStorage.setItem('loggedInUser', JSON.stringify(res.user));   // if it's object
-          this.router.navigate(['posts']).then(() =>
-            window.location.reload()
-          );
-        }
-      });
   }
 }
