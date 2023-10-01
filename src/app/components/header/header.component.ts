@@ -11,7 +11,7 @@ export class HeaderComponent {
   loggedInUser? : User;
 
   constructor(private router: Router) {
-    let jsonString = sessionStorage.getItem("loggedInUser") || "";
+    let jsonString = sessionStorage.getItem("loggedInUser");
     if (jsonString) {
       this.loggedInUser = JSON.parse(jsonString) as User;
     }

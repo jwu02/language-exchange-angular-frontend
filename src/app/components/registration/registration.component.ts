@@ -20,7 +20,14 @@ export class RegistrationComponent implements OnInit {
     // inject dependencies
     private userService: UserService,
     private router: Router
-  ) {}
+  ) {
+    // redirect to home page if user try to access login page while logged in
+    if (sessionStorage.getItem("loggedInUser")) {
+      this.router.navigate(['/posts']).then(() =>
+        window.location.reload()
+      );
+    }
+  }
 
   ngOnInit(): void {
     this.registrationForm = new FormGroup({
