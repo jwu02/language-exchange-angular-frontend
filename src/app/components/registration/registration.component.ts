@@ -42,10 +42,9 @@ export class RegistrationComponent implements OnInit {
       password: new FormControl<string|null>(null, [Validators.required, Validators.minLength(3)]), // set to 8 later
       confirmPassword: new FormControl<string|null>(null, Validators.required),
       gender: new FormControl<Gender>(Gender.Male, Validators.required),
-      dob: new FormControl<Date|null>(null, Validators.required),
+      dob: new FormControl<Date|null>(null, [Validators.required, this.invalidDobValidator()]),
       selfIntroduction: new FormControl<string|null>(null)
     }, { validators: this.mismatchPasswordValidator, updateOn: 'blur' });
-    
   }
 
   /**
@@ -99,5 +98,17 @@ export class RegistrationComponent implements OnInit {
         catchError((err) => of(null))
       );
     };
-}
+  }
+
+  /**
+   * 
+   * @returns a validator for checking if the provided dob is in the future
+   * in which case invalid
+   */
+  invalidDobValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const dateOfBirth = new Date(control.value);
+      return dateOfBirth > new Date() ? { 'invalidDob': true } : null
+    }
+  }
 }

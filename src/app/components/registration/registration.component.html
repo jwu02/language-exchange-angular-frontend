@@ -66,7 +66,11 @@
             <label for="floatingConfirmPassword">Confirm password</label>
           
             <div class="invalid-feedback">
-              <div>Type in password again. Passwords don't match.</div>
+              <div>Type in password again. 
+                <span *ngIf="registrationForm.errors?.['mismatchPassword']">
+                  Passwords don't match.
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -97,10 +101,11 @@
           <div class="mb-3">
             <h5><label for="inputDob" class="form-label">Date of birth</label></h5>
             <input type="date" class="form-control" id="inputDob" formControlName="dob"
-            [class.is-invalid]="localForm.submitted && registrationForm.get('dob')?.invalid">
+            [class.is-invalid]="(localForm.submitted || registrationForm.get('dob')?.touched) && registrationForm.get('dob')?.invalid">
 
             <div class="invalid-feedback">
               <div *ngIf="registrationForm.get('dob')?.hasError('required')">Date of birth is required.</div>
+              <div *ngIf="registrationForm.get('dob')?.hasError('invalidDob')">Time travellers not allowed.</div>
             </div>
           </div>
 
