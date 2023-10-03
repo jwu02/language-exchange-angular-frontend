@@ -24,8 +24,8 @@
             <div class="invalid-feedback">
               <!-- the appropriate message is displayed to let the user know
                 if any of the validations failed -->
-              <div *ngIf="registrationForm.get('email')?.hasError('required')">Email is required.</div>
-              <div *ngIf="registrationForm.get('email')?.hasError('email')">Not a valid email format.</div>
+              <div *ngIf="registrationForm.get('email')?.hasError('required')">Email required.</div>
+              <div *ngIf="registrationForm.get('email')?.hasError('email')">Invalid email format.</div>
               <div *ngIf="registrationForm.get('email')?.hasError('valueExists')">Email already registered.</div>
             </div>
           </div>
@@ -37,8 +37,8 @@
             <label for="floatingUsername">Username</label>
 
             <div class="invalid-feedback">
-              <div *ngIf="registrationForm.get('username')?.hasError('required')">Username is required.</div>
-              <!-- access the minlength validator's required length programmatically -->
+              <div *ngIf="registrationForm.get('username')?.hasError('required')">Username required.</div>
+              <!-- access the builtin minlength validator's required length programmatically -->
               <div *ngIf="registrationForm.get('username')?.hasError('minlength')">Username must be at least 
                 {{this.registrationForm.get('username')?.errors?.['minlength'].requiredLength}} characters long.</div>
                 <div *ngIf="registrationForm.get('username')?.hasError('valueExists')">Username already exists.</div>
@@ -52,7 +52,7 @@
             <label for="floatingPassword">Password</label>
 
             <div class="invalid-feedback">
-              <div *ngIf="registrationForm.get('password')?.hasError('required')">Password is required.</div>
+              <div *ngIf="registrationForm.get('password')?.hasError('required')">Password required.</div>
               <div *ngIf="registrationForm.get('password')?.hasError('minlength')">Password must be at least 
                 {{this.registrationForm.get('password')?.errors?.['minlength'].requiredLength}} characters long.</div>
             </div>
@@ -68,7 +68,7 @@
             <div class="invalid-feedback">
               <div>Type in password again. 
                 <span *ngIf="registrationForm.errors?.['mismatchPassword']">
-                  Passwords don't match.
+                  Passwords doesn't match.
                 </span>
               </div>
             </div>
@@ -81,10 +81,97 @@
     <div class="accordion-item">
       <h2 class="accordion-header">
         <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-          2. Let us know more about you
+          2. Exchange languages
         </button>
       </h2>
       <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+        <div class="accordion-body">
+          <div class="mb-3">
+            <div>
+              <div class="mb-3">I'm teaching</div>
+              <div formArrayName="teachLanguages">
+                <div *ngFor="let language of teachLanguageFormControls.controls; let i = index">
+                  <div class="row d-grid gap-2 d-md-flex justify-content-md-end mb-3" [formGroupName]="i">
+                    <div class="col">
+                      <input type="text" class="form-control" placeholder="Choose language" formControlName="languageId">
+                    </div>
+                    <div class="col">
+                      <select class="form-select" formControlName="proficiency">
+                        <option *ngFor="let p of languageProficiencies; let j = index" 
+                            value="{{ p.value }}">{{ p.key | lowercase | titlecase }}</option>
+                      </select>
+                    </div>
+                    <div class="col">
+                      <!-- disable remove button to ensure there's at least 1 language entry -->
+                      <button class="btn btn-danger" type="button" 
+                          (click)="removeLanguageFormGroup(InputLanguageType.Teach, i)" 
+                          [disabled]="teachLanguageFormControls.controls.length < 2">
+                        Remove</button>
+                    </div>
+                    </div>
+                </div>
+              </div>
+
+              <div class="d-grid gap-2 col-2 mx-auto">
+                <!-- tried using bootstrap tooltip for disabled button but doesn't show -->
+                <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-title="Disabled tooltip">
+                
+                <!-- disable add button to ensure there's at most 3 language entry -->
+                <button class="btn btn-success" type="button" 
+                    (click)="addLanguageFormGroup(InputLanguageType.Teach)" 
+                    [disabled]="teachLanguageFormControls.length > 2">
+                  Add Language
+                </button>
+
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <div class="mb-3">I'm learning</div>
+              <div formArrayName="learnLanguages">
+                <div *ngFor="let language of learnLanguageFormControls.controls; let i = index">
+                  <div class="row d-grid gap-2 d-md-flex justify-content-md-end mb-3" [formGroupName]="i">
+                    <div class="col">
+                      <input type="text" class="form-control" placeholder="Choose language" formControlName="languageId">
+                    </div>
+                    <div class="col">
+                      <select class="form-select" formControlName="proficiency">
+                        <option *ngFor="let p of languageProficiencies; let j = index" 
+                            value="{{ p.value }}">{{ p.key | lowercase | titlecase }}</option>
+                      </select>
+                    </div>
+                    <div class="col">
+                      <button class="btn btn-danger" type="button" 
+                          (click)="removeLanguageFormGroup(InputLanguageType.Learn, i)"
+                          [disabled]="learnLanguageFormControls.controls.length < 2">
+                        Remove</button>
+                    </div>
+                    </div>
+                </div>
+              </div>
+
+              <div class="d-grid gap-2 col-2 mx-auto">
+                <button class="btn btn-success" type="button" 
+                    (click)="addLanguageFormGroup(InputLanguageType.Learn)" 
+                    [disabled]="learnLanguageFormControls.length > 2">
+                  Add Language
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- registration form part 3 -->
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+          3. Let others know more about you
+        </button>
+      </h2>
+      <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
         <div class="accordion-body">
           <div class="mb-3">
             <h5><label class="form-label">Gender</label></h5>
@@ -104,36 +191,11 @@
             [class.is-invalid]="(localForm.submitted || registrationForm.get('dob')?.touched) && registrationForm.get('dob')?.invalid">
 
             <div class="invalid-feedback">
-              <div *ngIf="registrationForm.get('dob')?.hasError('required')">Date of birth is required.</div>
+              <div *ngIf="registrationForm.get('dob')?.hasError('required')">Date of birth required.</div>
               <div *ngIf="registrationForm.get('dob')?.hasError('invalidDob')">Time travellers not allowed.</div>
             </div>
           </div>
 
-          <div class="mb-3">
-            <h5>Languages</h5>
-            <div>
-              I'm teaching
-              
-            </div>
-
-            <div>
-              I'm learning
-
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- registration form part 3 -->
-    <div class="accordion-item">
-      <h2 class="accordion-header">
-        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-          3. Let others know more about you (optional)
-        </button>
-      </h2>
-      <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
-        <div class="accordion-body">
           <div class="form-floating">
             <textarea class="form-control" placeholder="Leave a self introduction here" id="floatingSelfIntroduction" style="height: 100px"></textarea>
             <label for="floatingSelfIntroduction">Self Introduction</label>

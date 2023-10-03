@@ -2,10 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { NavigationExtras, Router } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { User } from '../../models/user';
-import { AbstractControl, AsyncValidatorFn, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, AsyncValidatorFn, FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { Gender } from 'src/app/models/gender-enum';
 import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
+import { LanguageProficiency } from 'src/app/models/language-proficiency';
+import { LanguageService } from 'src/app/services/language.service';
 
 @Component({
   selector: 'app-registration',
@@ -15,10 +17,13 @@ import { catchError, map, tap } from 'rxjs/operators';
 export class RegistrationComponent implements OnInit {
 
   registrationForm!: FormGroup;
+  languageProficiencies?: LanguageProficiency[];
+  InputLanguageType = InputLanguageType;
   
   constructor(
     // inject dependencies
     private userService: UserService,
+    private languageService: LanguageService,
     private router: Router
   ) {
     // redirect to home page if user try to access login page while logged in
@@ -43,8 +48,19 @@ export class RegistrationComponent implements OnInit {
       confirmPassword: new FormControl<string|null>(null, Validators.required),
       gender: new FormControl<Gender>(Gender.Male, Validators.required),
       dob: new FormControl<Date|null>(null, [Validators.required, this.invalidDobValidator()]),
+      
+      teachLanguages: new FormArray([]),
+      learnLanguages: new FormArray([]),
+      
       selfIntroduction: new FormControl<string|null>(null)
     }, { validators: this.mismatchPasswordValidator, updateOn: 'blur' });
+    
+    this.languageService.getLanguageProficiencies()
+      .subscribe(proficiencies => {
+        this.languageProficiencies = proficiencies;
+        this.addLanguageFormGroup(InputLanguageType.Teach);
+        this.addLanguageFormGroup(InputLanguageType.Learn);
+      });
   }
 
   /**
@@ -111,4 +127,39 @@ export class RegistrationComponent implements OnInit {
       return dateOfBirth > new Date() ? { 'invalidDob': true } : null
     }
   }
+
+  get teachLanguageFormControls() {
+    return this.registrationForm.get("teachLanguages") as FormArray;
+  }
+
+  get learnLanguageFormControls() {
+    return this.registrationForm.get("learnLanguages") as FormArray;
+  }
+
+  addLanguageFormGroup(inputLanguageType: InputLanguageType): void {
+    let defaultProficiency = inputLanguageType === InputLanguageType.Teach? this.languageProficiencies?.length : 1;
+
+    const languageGroup = new FormGroup({
+      languageId: new FormControl<number|null>(null, Validators.required),
+      proficiency: new FormControl<number|undefined>(defaultProficiency, Validators.required)
+    });
+    if (inputLanguageType === InputLanguageType.Teach) {
+      this.teachLanguageFormControls.push(languageGroup);
+    } else {
+      this.learnLanguageFormControls.push(languageGroup);
+    }
+  }
+
+  removeLanguageFormGroup(inputLanguageType: InputLanguageType, index: number): void {
+    if (inputLanguageType === InputLanguageType.Teach) {
+      this.teachLanguageFormControls.removeAt(index);
+    } else {
+      this.learnLanguageFormControls.removeAt(index);
+    }
+  }
+}
+
+enum InputLanguageType {
+  Teach = "teach", 
+  Learn = "learn"
 }

@@ -6,6 +6,8 @@
 //         private password: string
 //     ) { }
 
+import { Language } from "./language"
+
 //     getId(): number {
 //         return this.id;
 //     }
@@ -18,5 +20,7 @@ export interface User {
     password: string,
     gender: string,
     dob: Date,
+    teachLanguages: Language[],
+    learnLanguages: Language[],
     selfIntroduction: string
 }

@@ -3,7 +3,6 @@ import { Injectable } from '@angular/core';
 import { User } from '../models/user';
 import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
-// import { EmailValidationResponse } from '../responses/EmailValidationResponse';
 
 @Injectable({
   providedIn: 'root'
