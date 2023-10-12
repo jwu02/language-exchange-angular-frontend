@@ -2,12 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { NavigationExtras, Router } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import { User } from '../../models/user';
-import { AbstractControl, AsyncValidatorFn, FormArray, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { Gender } from 'src/app/models/gender-enum';
+import { AbstractControl, AsyncValidatorFn, ControlContainer, FormArray, FormControl, FormGroup, NgForm, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { Gender, InputLanguageType } from 'src/app/models/enums';
 import { Observable, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { LanguageProficiency } from 'src/app/models/language-proficiency';
 import { LanguageService } from 'src/app/services/language.service';
+import { Language } from 'src/app/models/language';
 
 @Component({
   selector: 'app-registration',
@@ -17,14 +18,17 @@ import { LanguageService } from 'src/app/services/language.service';
 export class RegistrationComponent implements OnInit {
 
   registrationForm!: FormGroup;
-  languageProficiencies?: LanguageProficiency[];
+  languageProficiencies!: LanguageProficiency[];
+  exchangeableLanguages!: Language[];
   InputLanguageType = InputLanguageType;
+
+  selectedLanguageIds: number[] = [];
   
   constructor(
     // inject dependencies
     private userService: UserService,
     private languageService: LanguageService,
-    private router: Router
+    private router: Router,
   ) {
     // redirect to home page if user try to access login page while logged in
     if (sessionStorage.getItem("loggedInUser")) {
@@ -47,20 +51,17 @@ export class RegistrationComponent implements OnInit {
       password: new FormControl<string|null>(null, [Validators.required, Validators.minLength(3)]), // set to 8 later
       confirmPassword: new FormControl<string|null>(null, Validators.required),
       gender: new FormControl<Gender>(Gender.Male, Validators.required),
-      dob: new FormControl<Date|null>(null, [Validators.required, this.invalidDobValidator()]),
+      dob: new FormControl<Date>(new Date(), [Validators.required, this.invalidDobValidator()]),
       
-      teachLanguages: new FormArray([]),
-      learnLanguages: new FormArray([]),
+      teachLanguages: new FormArray([], [Validators.required, Validators.minLength(1), Validators.maxLength(3)]),
+      learnLanguages: new FormArray([], [Validators.required, Validators.minLength(1), Validators.maxLength(3)]),
       
       selfIntroduction: new FormControl<string|null>(null)
     }, { validators: this.mismatchPasswordValidator, updateOn: 'blur' });
     
-    this.languageService.getLanguageProficiencies()
-      .subscribe(proficiencies => {
-        this.languageProficiencies = proficiencies;
-        this.addLanguageFormGroup(InputLanguageType.Teach);
-        this.addLanguageFormGroup(InputLanguageType.Learn);
-      });
+    // call service to obtain list of languages and langauge proficiencies
+    this.getExchangeableLanguages();
+    this.getLanguageProficiencies();
   }
 
   /**
@@ -68,16 +69,24 @@ export class RegistrationComponent implements OnInit {
    * registration request to the server via a service
    */
   registerUser(): void {
+    console.log(this.registrationForm.value);
+
     if (this.registrationForm.valid) {
       let userBodyData = this.registrationForm.value;
       delete userBodyData["confirmPassword"];
 
       this.userService.registerUser(userBodyData as User)
         .subscribe(user => {
-          console.log(user);
-          // Redirect to login page after registration, with data indicating success
-          // https://stackoverflow.com/questions/58556569/angular-7-router-navigate-with-message-after-redirecting
-          const navigationExtras: NavigationExtras = {state: {registrationSuccess: true}};
+          let navigationExtras: NavigationExtras;
+          if (user) {
+            console.log(user);
+            // Redirect to login page after registration, with data indicating success
+            // https://stackoverflow.com/questions/58556569/angular-7-router-navigate-with-message-after-redirecting
+            navigationExtras = {state: {registrationSuccess: true}};
+          } else {
+            navigationExtras = {state: {registrationSuccess: false}};
+          }
+          
           this.router.navigateByUrl('/', navigationExtras);
         });
     }
@@ -128,38 +137,42 @@ export class RegistrationComponent implements OnInit {
     }
   }
 
-  get teachLanguageFormControls() {
+  get teachLanguagesFormArray() {
     return this.registrationForm.get("teachLanguages") as FormArray;
   }
 
-  get learnLanguageFormControls() {
+  get learnLanguagesFormArray() {
     return this.registrationForm.get("learnLanguages") as FormArray;
   }
-
-  addLanguageFormGroup(inputLanguageType: InputLanguageType): void {
-    let defaultProficiency = inputLanguageType === InputLanguageType.Teach? this.languageProficiencies?.length : 1;
-
-    const languageGroup = new FormGroup({
-      languageId: new FormControl<number|null>(null, Validators.required),
-      proficiency: new FormControl<number|undefined>(defaultProficiency, Validators.required)
-    });
-    if (inputLanguageType === InputLanguageType.Teach) {
-      this.teachLanguageFormControls.push(languageGroup);
-    } else {
-      this.learnLanguageFormControls.push(languageGroup);
-    }
+  
+  /**
+   * get and set list of available languages for language exchange
+   */
+  getExchangeableLanguages(): void {
+    this.languageService.getExchangeableLanguages()
+      .subscribe(languages => {
+        this.exchangeableLanguages = languages;
+      });
   }
 
-  removeLanguageFormGroup(inputLanguageType: InputLanguageType, index: number): void {
-    if (inputLanguageType === InputLanguageType.Teach) {
-      this.teachLanguageFormControls.removeAt(index);
-    } else {
-      this.learnLanguageFormControls.removeAt(index);
-    }
+  /**
+   * get and set list of language proficiency levels
+   */
+  getLanguageProficiencies(): void {
+    this.languageService.getLanguageProficiencies()
+      .subscribe(proficiencies => {
+        this.languageProficiencies = proficiencies;
+      });
   }
-}
 
-enum InputLanguageType {
-  Teach = "teach", 
-  Learn = "learn"
+  /**
+   * update list of selected language IDs, which subsequently
+   * update all child (exchange language) components with this 
+   * variable injected with @Input()
+   * @param updatedIds list of updated language IDs to set as 
+   *  IDs of currently selected languages
+   */
+  updateSelectedLanguageIds(updatedIds: number[]) {
+    this.selectedLanguageIds = updatedIds;
+  }
 }

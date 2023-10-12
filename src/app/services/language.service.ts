@@ -18,6 +18,16 @@ export class LanguageService {
     private http: HttpClient
   ) { }
 
+  getExchangeableLanguages(): Observable<Language[]> {
+    const url = `${this.languagesURL}/exchangeable-languages`;
+
+    return this.http.get<Language[]>(url).pipe(
+      tap((response: Language[]) => 
+        console.log(response)),
+      catchError(this.handleError<Language[]>('getExchangeableLanguages'))
+    )
+  }
+
   getLanguageProficiencies(): Observable<LanguageProficiency[]> {
     const url = `${this.languagesURL}/language-proficiencies`;
 

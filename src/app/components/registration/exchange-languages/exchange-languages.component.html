@@ -1,0 +1,67 @@
+<div [formGroup]="registrationForm">
+  <div class="mb-3">{{ inputLanguageType === InputLanguageType.Teach? "I'm teaching" : "I'm learning" }}</div>
+  <div formArrayName="{{ inputLanguageType }}Languages">
+    <div *ngFor="let language of languagesFormArray.controls; let i = index">
+      <div class="row d-grid gap-2 d-md-flex justify-content-md-end mb-3" [formGroupName]="i">
+        <!-- select language -->
+        <div class="col">
+          <select class="form-select" formControlName="languageId"
+            (click)="onLanguageSelectClick($event)"
+            (change)="onLanguageSelectChange($event)"
+              [class.is-invalid]="(languagesFormArray.at(i).get('languageId')?.touched) 
+              && (languagesFormArray.at(i).get('languageId')?.invalid || languagesFormArray.at(i).value.languageId==0)">
+            <option [ngValue]="0" selected disabled>Choose language</option>
+            <option *ngFor="let language of exchangeableLanguages; let j = index" 
+                [ngValue]="language.id" [disabled]="selectedLanguageIds.includes(language.id)">
+              {{ language.name }} <span *ngIf="language.nameInLanguage"> | {{ language.nameInLanguage }}</span>
+            </option>
+          </select>
+
+          <div class="invalid-feedback">
+            <div *ngIf="languagesFormArray.at(i).get('languageId')?.hasError('required') || 
+                languagesFormArray.at(i).value.languageId==0">Language required.</div>
+          </div>
+        </div>
+
+        <!-- select proficiency -->
+        <div class="col">
+          <select class="form-select" formControlName="proficiency"
+              [class.is-invalid]="(languagesFormArray.at(i).get('proficiency')?.touched) 
+              && (languagesFormArray.at(i).get('proficiency')?.invalid || languagesFormArray.at(i).value.proficiency==0)">
+            <option [ngValue]="0" selected disabled>Choose proficiency</option>
+            <option *ngFor="let p of languageProficiencies; let j = index" 
+                [ngValue]="p.value">{{ p.key | lowercase | titlecase }}</option>
+          </select>
+
+          <div class="invalid-feedback">
+            <div *ngIf="languagesFormArray.at(i).get('proficiency')?.hasError('required') || 
+                languagesFormArray.at(i).value.proficiency==0">Proficiency required.</div>
+          </div>
+        </div>
+
+        <!-- remove button -->
+        <div class="col">
+          <!-- disable remove button to ensure there's at least 1 language entry -->
+          <button class="btn btn-outline-danger" type="button" 
+              (click)="removeLanguageFormGroup(i)" 
+              [disabled]="languagesFormArray.controls.length==1">
+            Remove</button>
+        </div>
+        </div>
+    </div>
+  </div>
+
+  <div class="d-grid gap-2 col-2 mx-auto">
+    <!-- tried using bootstrap tooltip for disabled button but doesn't show -->
+    <!-- <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-title="Disabled tooltip"> -->
+    
+    <!-- disable add button to ensure there's at most 3 language entry -->
+    <button class="btn btn-success" type="button" 
+        (click)="addLanguageFormGroup()" 
+        [disabled]="languagesFormArray.length >= 3">
+      Add Language
+    </button>
+
+    <!-- </span> -->
+  </div>
+</div>

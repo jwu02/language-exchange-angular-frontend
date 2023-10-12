@@ -87,78 +87,23 @@
       <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
         <div class="accordion-body">
           <div class="mb-3">
-            <div>
-              <div class="mb-3">I'm teaching</div>
-              <div formArrayName="teachLanguages">
-                <div *ngFor="let language of teachLanguageFormControls.controls; let i = index">
-                  <div class="row d-grid gap-2 d-md-flex justify-content-md-end mb-3" [formGroupName]="i">
-                    <div class="col">
-                      <input type="text" class="form-control" placeholder="Choose language" formControlName="languageId">
-                    </div>
-                    <div class="col">
-                      <select class="form-select" formControlName="proficiency">
-                        <option *ngFor="let p of languageProficiencies; let j = index" 
-                            value="{{ p.value }}">{{ p.key | lowercase | titlecase }}</option>
-                      </select>
-                    </div>
-                    <div class="col">
-                      <!-- disable remove button to ensure there's at least 1 language entry -->
-                      <button class="btn btn-danger" type="button" 
-                          (click)="removeLanguageFormGroup(InputLanguageType.Teach, i)" 
-                          [disabled]="teachLanguageFormControls.controls.length < 2">
-                        Remove</button>
-                    </div>
-                    </div>
-                </div>
-              </div>
-
-              <div class="d-grid gap-2 col-2 mx-auto">
-                <!-- tried using bootstrap tooltip for disabled button but doesn't show -->
-                <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" data-bs-title="Disabled tooltip">
-                
-                <!-- disable add button to ensure there's at most 3 language entry -->
-                <button class="btn btn-success" type="button" 
-                    (click)="addLanguageFormGroup(InputLanguageType.Teach)" 
-                    [disabled]="teachLanguageFormControls.length > 2">
-                  Add Language
-                </button>
-
-                </span>
-              </div>
-            </div>
-
-            <div>
-              <div class="mb-3">I'm learning</div>
-              <div formArrayName="learnLanguages">
-                <div *ngFor="let language of learnLanguageFormControls.controls; let i = index">
-                  <div class="row d-grid gap-2 d-md-flex justify-content-md-end mb-3" [formGroupName]="i">
-                    <div class="col">
-                      <input type="text" class="form-control" placeholder="Choose language" formControlName="languageId">
-                    </div>
-                    <div class="col">
-                      <select class="form-select" formControlName="proficiency">
-                        <option *ngFor="let p of languageProficiencies; let j = index" 
-                            value="{{ p.value }}">{{ p.key | lowercase | titlecase }}</option>
-                      </select>
-                    </div>
-                    <div class="col">
-                      <button class="btn btn-danger" type="button" 
-                          (click)="removeLanguageFormGroup(InputLanguageType.Learn, i)"
-                          [disabled]="learnLanguageFormControls.controls.length < 2">
-                        Remove</button>
-                    </div>
-                    </div>
-                </div>
-              </div>
-
-              <div class="d-grid gap-2 col-2 mx-auto">
-                <button class="btn btn-success" type="button" 
-                    (click)="addLanguageFormGroup(InputLanguageType.Learn)" 
-                    [disabled]="learnLanguageFormControls.length > 2">
-                  Add Language
-                </button>
-              </div>
-            </div>
+            <app-exchange-languages [registrationForm]="registrationForm"
+                [languagesFormArray]="teachLanguagesFormArray"
+                [exchangeableLanguages]="exchangeableLanguages"
+                [languageProficiencies]="languageProficiencies"
+                [inputLanguageType]="InputLanguageType.Teach"
+                [selectedLanguageIds]="selectedLanguageIds"
+                (selectedLanguageIdsChange)="updateSelectedLanguageIds($event)">
+            </app-exchange-languages>
+            
+            <app-exchange-languages [registrationForm]="registrationForm"
+                [languagesFormArray]="learnLanguagesFormArray"
+                [exchangeableLanguages]="exchangeableLanguages"
+                [languageProficiencies]="languageProficiencies"
+                [inputLanguageType]="InputLanguageType.Learn"
+                [selectedLanguageIds]="selectedLanguageIds"
+                (selectedLanguageIdsChange)="updateSelectedLanguageIds($event)">
+            </app-exchange-languages>
           </div>
         </div>
       </div>
